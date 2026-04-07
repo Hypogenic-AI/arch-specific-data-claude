@@ -1,0 +1,28 @@
+idea:
+  title: Architecture-Specific Data Attractors
+  domain: machine_learning
+  hypothesis: 'Different neural network architectures, such as RNNs versus transformer-based
+    LLMs, may develop distinct attractors or default responses (e.g., favorite dessert)
+    when exposed to similar data and training regimes. This research will test whether
+    architectural differences alone are sufficient to prevent or alter persona collapse,
+    and whether sufficiently capable RNNs would converge to the same attractors as
+    LLMs.
+
+    '
+  background:
+    description: 'Essentially all frontier LLMs think tiramisu is their favorite dessert.
+
+      I bet a different architecture, e.g, an RNN might have a different attractor.
+      How different do setups need to be to diverge such persona collapse? And would
+      a good enough RNN eventually also like tiramisu?
+
+      '
+  metadata:
+    author: Ari Holtzman
+    source: IdeaHub
+    source_url: https://hypogenic.ai/ideahub/idea/xGb0nQMsoaurdetNK9Gh
+    idea_id: architecture_specific_data_att_20260407_215215_1b236315
+    created_at: '2026-04-07T21:52:15.039349'
+    status: submitted
+    github_repo_name: arch-specific-data-claude
+    github_repo_url: https://github.com/Hypogenic-AI/arch-specific-data-claude
