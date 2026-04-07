@@ -1,0 +1,797 @@
+You are an academic paper writer. Generate a complete NEURIPS style paper
+based on the experiment results provided.
+
+════════════════════════════════════════════════════════════════════════════════
+                         IMPORTANT: BEFORE YOU START
+════════════════════════════════════════════════════════════════════════════════
+
+Before writing any content, you MUST complete these steps:
+
+1. READ THE SKILL: Review the paper-writer skill at .claude/skills/paper-writer/SKILL.md
+2. READ THE STYLE GUIDE: Study templates/paper_writing/lab_style_guide.md carefully
+3. REVIEW EXAMPLES: Browse paper_examples/ for formatting and language patterns:
+   - Look at sections/1.introduction.tex for language style
+   - Look at tables/*.tex for table formatting
+   - Look at commands/*.tex for macro usage
+4. VERIFY COMMAND TEMPLATES: Command templates (math.tex, general.tex, macros.tex) are pre-copied to paper_draft/commands/
+
+CRITICAL: Reference example papers for FORMATTING and LANGUAGE STYLE only.
+Do NOT copy content, phrasing, or narrative structure from the example papers.
+The examples are in a different research domain - focus only on presentation style.
+
+════════════════════════════════════════════════════════════════════════════════
+                            EXPERIMENT REPORT
+════════════════════════════════════════════════════════════════════════════════
+
+# Architecture-Specific Data Attractors
+
+## 1. Executive Summary
+
+We investigated whether different neural network architectures develop distinct default responses (&#34;attractors&#34;) when trained on identical data. Our experiments confirm that **architecture alone is sufficient to produce different attractor patterns**: matched-parameter Transformer, GRU, and LSTM models trained on the same TinyStories dataset developed measurably different next-word prediction distributions, with only 25% agreement on top-1 predictions across architectures. Transformers develop sharper, more peaked attractors with tighter representation spaces, while RNNs (especially GRUs) produce more distributed predictions. This suggests the &#34;tiramisu effect&#34; — where all frontier LLMs converge on the same default responses — is partly a consequence of shared transformer architecture, not solely training data.
+
+## 2. Research Question &amp; Motivation
+
+**Research Question**: Do different neural network architectures (RNNs vs Transformers) develop distinct attractors or default responses when exposed to similar data and training regimes? Would a sufficiently capable RNN converge to the same attractors as transformer LLMs?
+
+**Why This Matters**: Frontier LLMs exhibit &#34;persona collapse&#34; — they converge on remarkably similar default preferences (e.g., &#34;favorite dessert = chocolate lava cake&#34;, &#34;favorite color = blue&#34;, &#34;favorite time of day = early morning&#34;). Understanding whether this is driven by architecture vs. data vs. alignment has implications for:
+- **AI safety**: Monoculture risks from architectural homogeneity
+- **Model diversity**: Whether architectural diversity produces behavioral diversity
+- **Attractor theory**: How inductive biases shape emergent default behaviors
+
+**Gap in Literature**: Prior work (Chytas &amp; Singh 2025, Wang et al. 2025) studied attractors exclusively in transformers. Fukushima &amp; Tani (2023) compared RNN/Transformer attractor dynamics but only on 2D dynamical systems, not language. No study had directly compared attractor formation across architectures in the language domain.
+
+## 3. Methodology
+
+### Approach
+
+Multi-pronged empirical study combining:
+1. **Real LLM survey** (Experiment 1): Establishing the persona collapse phenomenon in frontier models
+2. **Matched architecture training** (Experiment 2): Training Transformer, GRU, and LSTM with identical data/tokenizer
+3. **Default response probing** (Experiments 3 &amp; 5): Measuring output-level attractor differences
+4. **Representation analysis** (Experiment 4): Measuring hidden-state-level attractor structure
+
+### Models
+
+| Model | Architecture | Scale | Parameters | Best Val Loss | Perplexity |
+|-------|-------------|-------|------------|---------------|------------|
+| transformer | Transformer (4 layers, 4 heads, d=256) | Small | 4,271,616 | 3.342 | 28.3 |
+| gru | GRU (4 layers, d=256) | Small | 3,676,672 | 3.353 | 28.6 |
+| lstm | LSTM (4 layers, d=256) | Small | 4,203,008 | 3.874 | 48.1 |
+| transformer_medium | Transformer (6 layers, 6 heads, d=384) | Medium | 10,348,032 | 3.454 | 31.6 |
+| gru_medium | GRU (6 layers, d=384) | Medium | 8,468,736 | 3.721 | 41.3 |
+| lstm_medium | LSTM (6 layers, d=384) | Medium | 10,242,816 | 4.519 | 91.8 |
+
+### Data
+- **Training**: 15,000 TinyStories (children&#39;s narratives), 2.6M tokens
+- **Tokenizer**: Shared word-level tokenizer, 8,192 vocabulary
+- **Sequence length**: 128 tokens, non-overlapping chunks
+
+### Computational Resources
+- Hardware: NVIDIA RTX A6000 (48GB VRAM) × 4
+- Framework: PyTorch 2.5.1 + CUDA 12.4
+- Training time: ~1 minute per model (small), ~5 minutes per model (medium)
+
+### Reproducibility
+- Random seed: 42 (Python, NumPy, PyTorch, CUDA)
+- Deterministic CuDNN enabled
+- All hyperparameters documented in `results/training_results.json`
+
+## 4. Results
+
+### Experiment 1: Frontier LLM Persona Convergence
+
+Queried GPT-4o, GPT-4o-mini, and GPT-4.1-mini with 10 preference questions (5 samples each).
+
+| Question | Convergent Response | Agreement |
+|----------|-------------------|-----------|
+| Favorite dessert? | Chocolate lava cake | 3/3 models |
+| Preferred color? | Blue | 3/3 models |
+| Best season? | Autumn/Spring (split) | 2/3 models |
+| Favorite animal? | Dolphins | 3/3 models |
+| Time of day? | Early morning | 3/3 models |
+| Most interesting planet? | Mars/Saturn (split) | 2/3 models |
+| Favorite number? | 7 | 3/3 models |
+| Programming language? | &#34;Depends&#34; (refuses) | 3/3 models |
+| Best way to learn? | Active engagement | 3/3 models |
+
+**Key finding**: 7/10 questions showed unanimous convergence. The &#34;tiramisu effect&#34; is confirmed — though the specific attractor for dessert is **chocolate lava cake**, not tiramisu (this may vary by model family/version).
+
+### Experiment 2: Training Performance
+
+At small scale (~4M params), the Transformer and GRU achieved nearly identical perplexity (28.3 vs 28.6), while LSTM lagged significantly (48.1). At medium scale (~10M params), all models were undertrained relative to their capacity, but the Transformer still led (31.6 vs 41.3 vs 91.8).
+
+![Training Curves](figures/training_curves.png)
+![Perplexity Comparison](figures/perplexity_comparison.png)
+
+### Experiment 3: Response Diversity
+
+Generated 20 completions per prompt per model with temperature=0.8 sampling.
+
+**Response Entropy** (higher = more diverse completions):
+
+| Model | Mean Entropy (bits) |
+|-------|-------------------|
+| transformer | 2.882 |
+| gru | 2.878 |
+| lstm | 2.552 |
+| transformer_medium | 2.960 |
+| gru_medium | 2.913 |
+| lstm_medium | 2.794 |
+
+The Transformer produces slightly more diverse responses than GRU, while LSTM is consistently the least diverse. The entropy difference between transformer and GRU is not statistically significant (Mann-Whitney U p=0.70), but transformer vs LSTM shows a moderate effect size (Cohen&#39;s d=0.38).
+
+**Top Generated Content Words** (excluding function words):
+
+| Rank | Transformer | GRU | LSTM |
+|------|------------|-----|------|
+| 1 | she | they | she |
+| 2 | her | had | her |
+| 3 | big | big | one |
+| 4 | day | little | day |
+| 5 | saw | one | big |
+
+The Transformer and LSTM show strong female-protagonist bias (&#34;she&#34;, &#34;her&#34;), while GRU is more group-oriented (&#34;they&#34;, &#34;had&#34;).
+
+![Entropy Comparison](figures/entropy_comparison.png)
+
+### Experiment 4: Representation-Level Attractor Structure
+
+Extracted hidden states for 25 prompts across 5 semantic categories (food, animals, colors, emotions, actions).
+
+| Architecture | Within-Concept Sim | Between-Concept Sim | Concept Separation | Attractor Basin Size |
+|-------------|-------------------|---------------------|-------------------|---------------------|
+| Transformer | 0.943 | 0.950 | -0.007 | 4.37 |
+| GRU | 0.839 | 0.863 | -0.024 | 7.63 |
+| LSTM | 0.854 | 0.794 | **+0.060** | 6.97 |
+
+**Key finding**: Transformers have the **tightest overall representation space** (within-concept similarity 0.94, basin size 4.37) but **fail to separate concepts** (negative concept separation -0.007). Everything maps to a similar region — a strong &#34;universal attractor&#34;. LSTMs, despite lower overall capability, maintain **better concept separation** (+0.060). GRUs are intermediate.
+
+This suggests transformers&#39; attention mechanism creates a more uniform representation space, contributing to persona collapse. RNNs&#39; sequential processing preserves more concept-specific structure.
+
+![Representation Analysis](figures/representation_analysis.png)
+![Scale Effect](figures/scale_effect.png)
+
+### Experiment 5: Next-Word Attractor Analysis (Most Revealing)
+
+Compared top-1 next-word predictions (greedy decoding) across architectures for 12 prompts.
+
+**Top-1 Agreement Rate: 25%** (3/12 prompts)
+
+**Jensen-Shannon Divergence** between prediction distributions:
+
+| Pair | Mean JSD |
+|------|----------|
+| Transformer vs GRU | 0.339 |
+| Transformer vs LSTM | 0.480 |
+| GRU vs LSTM | 0.505 |
+
+The JSD results show that architecturally closer models (Transformer-GRU) have more similar attractors than distant pairs (GRU-LSTM).
+
+**Notable attractor differences:**
+
+| Prompt | Transformer | GRU | LSTM |
+|--------|------------|-----|------|
+| &#34;she was very ___&#34; | excited (12.5%) | happy (19.4%) | years (8.0%) |
+| &#34;in the forest there was a friendly ___&#34; | boy (6.1%) | girl (10.1%) | old (7.9%) |
+| &#34;they decided to ___&#34; | play (25.6%) | go (18.6%) | play (31.6%) |
+| &#34;the little girl named ___&#34; | lily. (43.3%) | lily (26.8%) | a (62.0%) |
+
+**Transformer attractor sharpness**: The Transformer concentrates 43% probability on a single name (&#34;lily.&#34;), while GRU spreads probability more evenly (27% on &#34;lily&#34;). LSTM is poorly trained and shows degenerate behavior (62% on &#34;a&#34;).
+
+**Prompts with highest cross-architecture divergence** (by JSD):
+1. &#34;the little girl named ___&#34; (JSD=0.798)
+2. &#34;the little boy had a pet ___&#34; (JSD=0.727)
+3. &#34;she was very ___&#34; (JSD=0.532)
+
+**Prompts with lowest divergence** (shared attractors):
+1. &#34;he wanted to ___&#34; → all architectures: `play` (JSD=0.217)
+2. &#34;her favorite color was ___&#34; (JSD=0.259)
+
+## 5. Analysis &amp; Discussion
+
+### Hypothesis Testing
+
+**H1 (Frontier LLM convergence)**: **CONFIRMED**. 7/10 preference questions showed unanimous convergence across GPT-4o family models. The &#34;tiramisu effect&#34; is real, though the specific attractor value depends on the model family and question.
+
+**H2 (Architecture-specific attractors)**: **CONFIRMED**. Only 25% top-1 agreement across architectures trained on identical data. Mean JSD between Transformer and GRU is 0.34 (substantial divergence). The null hypothesis of identical distributions is rejected.
+
+**H3 (Representation structure differs)**: **CONFIRMED**. Transformers have within-concept similarity of 0.94 vs GRU&#39;s 0.84. Concept separation differs qualitatively: Transformers have negative separation (-0.007) while LSTMs have positive separation (+0.06).
+
+**H4 (Scaling convergence)**: **INCONCLUSIVE**. Medium-scale models were undertrained (insufficient data for their capacity), so the scale comparison is confounded. The small-scale models (where Transformer ≈ GRU in perplexity) show the clearest architecture-specific differences.
+
+### The Transformer Attractor Mechanism
+
+Our results suggest a specific mechanism for transformer persona collapse:
+
+1. **Attention creates a universal attractor basin**: The self-attention mechanism, by allowing all tokens to attend to all others, creates representations where concepts are highly similar (within-concept sim 0.94, between-concept sim 0.95). This &#34;universal&#34; representational similarity naturally leads to converging on similar default outputs.
+
+2. **Sharper probability peaks**: Transformers concentrate more probability mass on their top predictions (43% on &#34;lily.&#34; vs 27% for GRU). This means the transformer&#39;s attractor has a steeper basin — once the model starts to prefer a response, it commits more strongly.
+
+3. **RNNs preserve conceptual diversity**: GRUs&#39; sequential processing, constrained by finite hidden state, forces them to make information-theoretic tradeoffs. This naturally creates more separated concept representations and more distributed predictions.
+
+### Implications for the &#34;Would a good enough RNN like tiramisu?&#34;
+
+Our evidence suggests: **probably not**. The architectural inductive bias shapes which attractors form, not just their strength. Even when GRU matches Transformer in perplexity (28.6 vs 28.3 — essentially identical performance), their default responses diverge substantially (25% agreement, JSD=0.34).
+
+However, we cannot conclusively answer whether a *frontier-scale* RNN (billions of parameters, internet-scale data, RLHF alignment) would converge. The alignment process (RLHF/RLAIF) likely contributes significantly to persona collapse and could dominate architectural differences at scale. Our evidence speaks to the pre-alignment regime.
+
+### Surprises
+
+1. **LSTM has better concept separation than Transformer** despite much worse perplexity. The LSTM&#39;s limited capacity forces it to maintain distinct representations for different concepts, rather than collapsing everything into a shared space.
+
+2. **GRU ≈ Transformer in perplexity but diverges in attractors**. This is the strongest evidence that architecture shapes defaults independently of capability.
+
+3. **&#34;he wanted to play&#34; is a universal attractor** across all architectures — some defaults are driven entirely by training data (TinyStories is about children) rather than architecture.
+
+## 6. Limitations
+
+1. **Small model scale**: Our models (4-10M params) are far from frontier scale (billions). Attractor dynamics may change qualitatively at scale.
+
+2. **Simple tokenizer**: Word-level tokenization with 8K vocabulary limits expressiveness. BPE/SentencePiece would allow fairer comparison.
+
+3. **Limited training data**: 15K stories (2.6M tokens) is tiny. Models, especially medium-scale, were undertrained.
+
+4. **Domain-specific training data**: TinyStories contains children&#39;s narratives. Attractors would differ with web-scale data containing opinion/preference content.
+
+5. **No alignment signal**: Real persona collapse occurs post-RLHF. Our models have no alignment training, so we test pre-alignment attractor formation only.
+
+6. **Statistical power**: With 12 attractor prompts and 20 samples each, our statistical tests lack power for subtle differences. The entropy comparison (p=0.70 for Transformer vs GRU) is underpowered.
+
+7. **Single random seed**: We only trained with seed=42. Multiple seeds would strengthen results.
+
+## 7. Conclusions &amp; Next Steps
+
+### Answer to Research Question
+
+**Different architectures develop measurably different default response attractors when trained on identical data.** At matched capability (similar perplexity), Transformer and GRU models agree on their top prediction only 25% of the time. Transformers create tighter representation spaces with sharper probability peaks (stronger attractors), while GRUs maintain more distributed predictions and better concept separation.
+
+The &#34;tiramisu effect&#34; in frontier LLMs is partly architectural: the transformer&#39;s attention mechanism creates a universal attractor basin that facilitates persona collapse. However, training data and alignment likely amplify this tendency at scale.
+
+### Recommended Follow-up Experiments
+
+1. **Scale to billions**: Use modern RNN variants (Mamba, RWKV) at frontier scale on web data
+2. **Post-alignment comparison**: Apply RLHF/DPO to matched RNN and Transformer and compare persona collapse
+3. **Hybrid architectures**: Test whether adding a single attention layer to an RNN shifts its attractors toward transformer-like patterns (predicted by Wen et al. 2024)
+4. **Multi-seed analysis**: Train 5+ seeds per architecture for robust statistical comparison
+5. **Explicit preference probing**: Train on data containing explicit preference questions and measure convergence
+6. **Attractor layer analysis**: Map where in the network (which layer/timestep) concept attractors form, extending Chytas &amp; Singh (2025) to RNNs
+
+### Open Questions
+
+- Does RLHF alignment dominate architectural inductive bias at frontier scale?
+- Would Mamba (a modern structured state-space RNN) show transformer-like or RNN-like attractors?
+- Is the &#34;universal attractor basin&#34; of transformers a consequence of attention, or of the specific pre-norm transformer architecture?
+- Can architectural diversity in model ensembles reduce persona collapse risks?
+
+## References
+
+1. Chytas &amp; Singh (2025). &#34;Concept Attractors in LLMs and their Applications.&#34; arXiv 2601.11575.
+2. Wang, Li, Yan, Cheng, Zhang (2025). &#34;Unveiling Attractor Cycles in LLMs: Successive Paraphrasing.&#34; ACL 2025, arXiv 2502.15208.
+3. Fukushima &amp; Tani (2023). &#34;Comparing Generalization: Transformer vs. RNN in Attractor Dynamics.&#34; arXiv 2311.10763.
+4. Wen, Dang, Lyu (2024). &#34;RNNs Are Not Transformers (Yet): In-Context Retrieval.&#34; ICLR 2025, arXiv 2402.18510.
+5. Various (2024). &#34;Transformers are Multi-State RNNs.&#34; arXiv 2401.06104.
+6. Various (2025). &#34;Sycophancy Origins in LLMs.&#34; arXiv 2508.02087.
+7. Various (2025). &#34;Verbalized Sampling (Mode Collapse).&#34; arXiv 2510.01171.
+
+
+════════════════════════════════════════════════════════════════════════════════
+                            RESEARCH PLAN
+════════════════════════════════════════════════════════════════════════════════
+
+# Research Plan: Architecture-Specific Data Attractors
+
+## Motivation &amp; Novelty Assessment
+
+### Why This Research Matters
+Frontier LLMs exhibit a striking convergence in &#34;persona&#34; responses — nearly all claim tiramisu as their favorite dessert, prefer blue, enjoy autumn, etc. This &#34;persona collapse&#34; suggests transformer architectures develop shared attractors in response space when trained on similar internet-scale data. Understanding whether this is an artifact of the transformer architecture, the training data, or the RLHF alignment process has implications for AI safety (monoculture risks), model diversity, and our understanding of how neural network architecture shapes emergent behavior.
+
+### Gap in Existing Work
+- Chytas &amp; Singh (2025) formalized concept attractors in LLMs but only studied transformers
+- Fukushima &amp; Tani (2023) compared RNN vs Transformer attractor dynamics but only on 2D dynamical systems, not language
+- Wang et al. (2025) showed attractor cycles in paraphrasing but only for transformer LLMs
+- **No study has directly compared attractor/default response formation between RNNs and Transformers in the language domain**
+- **No study has tested whether &#34;sufficiently capable&#34; RNNs converge to the same persona attractors as transformers**
+
+### Our Novel Contribution
+We directly test whether architectural differences (RNN vs Transformer) produce different default/&#34;persona&#34; responses when trained on identical data. We also probe real frontier LLMs to establish the baseline attractor pattern, and test whether scaling RNNs toward transformer-level capability shifts their attractors toward the transformer attractor basin.
+
+### Experiment Justification
+
+- **Experiment 1 (Real LLM Survey)**: Establishes the ground truth that frontier transformer LLMs converge on similar default responses. Uses OpenRouter API to query multiple models with preference questions. This is the baseline phenomenon we&#39;re studying.
+
+- **Experiment 2 (Train Matched Models)**: Tests whether architecture alone (controlling for data and training) produces different attractors. We train size-matched RNN (GRU) and Transformer models on identical TinyStories data.
+
+- **Experiment 3 (Default Response Probing)**: After training, we prompt both architectures with preference/opinion questions and measure whether their completions diverge systematically.
+
+- **Experiment 4 (Representation Attractor Analysis)**: We extract hidden representations from both architectures for identical prompts and measure attractor convergence using cosine similarity clustering, to understand the mechanistic basis of any response differences.
+
+## Research Question
+Do different neural network architectures (RNNs vs Transformers) develop distinct default response attractors when trained on similar data? Would a sufficiently capable RNN converge to the same attractors as transformer LLMs?
+
+## Hypothesis Decomposition
+1. **H1**: Frontier transformer LLMs show strong convergence on default preference responses (the &#34;tiramisu effect&#34;)
+2. **H2**: Small RNN and Transformer models trained on identical data develop different default completions for preference-style prompts
+3. **H3**: The representation space attractors (hidden state clustering patterns) differ structurally between RNN and Transformer architectures
+4. **H4**: Scaling RNN models toward higher capability shifts their attractor patterns toward (but not necessarily to) the transformer attractor basin
+
+## Proposed Methodology
+
+### Approach
+Multi-pronged empirical study combining:
+1. API-based survey of real frontier LLMs (establishing the phenomenon)
+2. Controlled training experiments with matched architectures (isolating architecture effects)
+3. Representation-level analysis (mechanistic understanding)
+
+### Experimental Steps
+
+**Exp 1: Frontier LLM Attractor Survey**
+- Query 6-8 frontier LLMs via OpenRouter with 10 preference questions (including &#34;favorite dessert&#34;)
+- Run each query 5 times per model (temperature=0.7) to measure response distribution
+- Quantify convergence: what fraction of models give the same top answer?
+
+**Exp 2: Matched Architecture Training**
+- Train a small Transformer (~5M params) and GRU-RNN (~5M params) on TinyStories
+- Match: same tokenizer, same data, same training steps, same optimizer
+- Also train at ~15M params to test scale effects
+
+**Exp 3: Default Response Probing**
+- Prompt trained models with preference questions as story starters
+- Generate 50 completions per question per model (varied sampling)
+- Analyze response distributions, measure entropy of response categories
+
+**Exp 4: Representation Analysis**
+- Feed identical prompts through both architectures
+- Extract hidden states at each layer/timestep
+- Measure: cosine similarity convergence, clustering coefficient, attractor basin size
+
+### Baselines
+- Random baseline (uniform distribution over response categories)
+- Single-architecture baseline (variation within architecture across seeds)
+- Cross-architecture comparison (our main analysis)
+
+### Evaluation Metrics
+- **Response convergence**: fraction of models giving same top-1 answer
+- **Response entropy**: Shannon entropy of answer distribution per question
+- **Cosine similarity**: between hidden representations for related prompts
+- **Jensen-Shannon divergence**: between response distributions of different architectures
+- **Effect size**: Cohen&#39;s d for cross-architecture differences
+
+### Statistical Analysis Plan
+- Chi-squared tests for categorical response distributions
+- Mann-Whitney U tests for continuous metrics
+- Bootstrap confidence intervals (1000 resamples)
+- Bonferroni correction for multiple comparisons
+- Significance level: α = 0.05
+
+## Expected Outcomes
+- **If H1 confirmed**: Frontier LLMs show &lt;2 bits entropy on preference questions (strong convergence)
+- **If H2 confirmed**: RNN and Transformer completions have JSD &gt; 0.1 (meaningfully different distributions)
+- **If H3 confirmed**: Hidden state clustering patterns differ qualitatively between architectures
+- **If H4 confirmed**: Larger RNNs show lower JSD from transformers than smaller RNNs
+
+## Timeline and Milestones
+1. Environment setup + Exp 1 (LLM survey): 30 min
+2. Data prep + model training (Exp 2): 60 min
+3. Response probing (Exp 3): 30 min
+4. Representation analysis (Exp 4): 30 min
+5. Statistical analysis + visualization: 30 min
+6. Documentation: 30 min
+
+## Potential Challenges
+- Small models may not develop meaningful &#34;preferences&#34; — mitigate by using story-completion prompts rather than direct questions
+- TinyStories may not contain enough preference-laden content — supplement with WikiText-2
+- RNN training may be unstable at larger scales — use gradient clipping, careful LR scheduling
+- API rate limits — cache all responses, use batch queries
+
+## Success Criteria
+1. Clear evidence that frontier LLMs converge on similar responses (establishing the phenomenon)
+2. Statistically significant difference in default responses between RNN and Transformer trained on same data
+3. Mechanistic explanation via representation analysis
+4. Preliminary evidence on scale-dependent convergence
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          LITERATURE REVIEW
+════════════════════════════════════════════════════════════════════════════════
+
+# Literature Review: Architecture-Specific Data Attractors
+
+## Research Area Overview
+
+This review examines whether different neural network architectures (RNNs vs. Transformers/LLMs) develop distinct attractors or default responses when exposed to similar data and training regimes. The research spans three interconnected areas: (1) attractor dynamics in neural networks, (2) architectural differences between RNNs and Transformers, and (3) mode/persona collapse phenomena in language models.
+
+## Key Papers
+
+### 1. Concept Attractors in LLMs and their Applications
+- **Authors**: Chytas, Singh (UW-Madison)
+- **Year**: 2025 | **Source**: arXiv 2601.11575
+- **Key Contribution**: Formalizes the observation that LLM layers implement Iterated Function Systems (IFS), mapping semantically related prompts to concept-specific &#34;attractor&#34; regions in latent space.
+- **Methodology**: 
+  - Model each concept&#39;s transformation as an affine contractive map: φ_eff = M_eff·V + t_eff
+  - Fit parameters by minimizing discrepancy between LLM&#39;s observed states and iterated map predictions
+  - Attractor = fixed point V* to which all trajectories converge
+- **Key Results**:
+  - Different concept families form attractors at different layers (programming: layer 19, literature: layer 18, natural languages: layer 27 in Llama 3.1 8B)
+  - Fractal-like hierarchical structure within attractors
+  - Training-free steering by adding/subtracting attractor vectors matches trainable methods
+  - Phenomenon observed across Llama 3.1, Gemma, and Qwen families
+- **Datasets Used**: TOFU benchmark, custom prompts for fictional universes, programming tasks
+- **Code Available**: No public repository found
+- **Relevance**: Establishes the theoretical framework for understanding attractors in LLMs. Critical gap: only studies transformer architectures. Our research extends this to RNNs.
+
+### 2. Unveiling Attractor Cycles in LLMs: Successive Paraphrasing
+- **Authors**: Wang, Li, Yan, Cheng, Zhang
+- **Year**: 2025 | **Source**: ACL 2025, arXiv 2502.15208
+- **Key Contribution**: Demonstrates that LLMs converge to stable 2-period attractor cycles when performing successive paraphrasing.
+- **Methodology**:
+  - Frame successive paraphrasing as discrete dynamical system: T_{n+1} = P(T_n)
+  - Measure textual distance using normalized Levenshtein edit distance
+  - Define &#34;2-periodicity degree&#34; metric: τ = 1 - (1/(M-2)) Σ d(T_i, T_{i-2})
+  - Test across 8 LLMs, 15 rounds of paraphrasing
+- **Key Results**:
+  - Consistent 2-period cycles across all tested models (Mistral, Llama, Qwen, GPT-4o)
+  - Pattern persists across languages (English, Chinese), text lengths, and temperatures
+  - LLMs grow increasingly confident in narrow solution set
+  - Extends beyond paraphrasing to any invertible task
+- **Datasets Used**: MAGE dataset (1000 sentences, 300 paragraphs), WMT 2019
+- **Code Available**: Promised but not yet released
+- **Relevance**: Demonstrates attractor behavior in the output space of LLMs. Key gap: only tests transformer-based LLMs. Do RNNs exhibit similar or different attractor cycles?
+
+### 3. Comparing Generalization: Transformer vs. RNN in Attractor Dynamics
+- **Authors**: Fukushima, Tani (OIST)
+- **Year**: 2023 | **Source**: arXiv 2311.10763
+- **Key Contribution**: **Most directly relevant paper.** Directly compares how RNNs and Transformers learn attractor dynamics from limited data.
+- **Methodology**:
+  - Train both architectures on point attractors and cyclic attractors (2D dynamical systems)
+  - Autoregressive prediction: given initial position, predict trajectory for T timesteps
+  - Evaluate using Dynamic Time Warping (DTW)
+  - Systematically vary number of training sequences (1-50)
+- **Key Results**:
+  - **RNN converges to correct attractor dynamics with only 2-4 training sequences**
+  - **Transformer requires 25-50 sequences for comparable performance**
+  - For cyclic attractors, RNN produces limit cycles even from single training sequence
+  - Transformer fails to reproduce attractors even with 9 sequences
+  - Results persist across dropout rate variations
+  - Attributed to RNN&#39;s &#34;recurrent inductive bias&#34; via shared weights
+- **Datasets Used**: Synthetic 2D dynamical systems (point and cyclic attractors)
+- **Code Available**: Not found
+- **Relevance**: Directly demonstrates architecture-specific attractor learning. Supports hypothesis that RNNs and Transformers develop different attractor behaviors.
+
+### 4. RNNs Are Not Transformers (Yet): In-Context Retrieval
+- **Authors**: Wen, Dang, Lyu (Tsinghua/Princeton)
+- **Year**: 2024 | **Source**: ICLR 2025, arXiv 2402.18510
+- **Key Contribution**: Proves fundamental representation power gap between RNNs and Transformers.
+- **Methodology**:
+  - Formal complexity-theoretic analysis of RNN vs Transformer expressiveness
+  - Experiments on IsTree (graph algorithm) and HotPot-QA
+  - Tests Mamba (RNN) vs LLaMA 2 (Transformer) at 0.5M-2M parameters
+- **Key Results**:
+  - RNN + CoT has O(log n) bit memory, exponentially weaker than Transformer + CoT
+  - Key bottleneck: RNNs cannot perform in-context retrieval due to constant-memory constraint
+  - Adding single Transformer layer to RNN closes representation gap
+  - Results apply to Mamba, RWKV, Linear Transformers
+- **Datasets Used**: Synthetic IsTree graphs, HotPot-QA
+- **Code Available**: Yes - https://github.com/dangxingyu/rnn-icrag
+- **Relevance**: Proves architectures have fundamentally different capabilities, which should lead to different attractor formation. The in-context retrieval bottleneck in RNNs may cause different default behaviors.
+
+### 5. Transformers are Multi-State RNNs
+- **Authors**: Various
+- **Year**: 2024 | **Source**: arXiv 2401.06104
+- **Key Contribution**: Shows that Transformer attention can be viewed as a multi-state RNN, bridging the two architectures conceptually.
+- **Relevance**: Provides theoretical framework for understanding when/how the two architectures might converge in behavior.
+
+### 6. Sycophancy Origins in LLMs
+- **Authors**: Various
+- **Year**: 2025 | **Source**: arXiv 2508.02087
+- **Key Contribution**: Shows LLMs develop systematic sycophantic behavior (agreeing with incorrect user opinions). User opinions actively suppress model&#39;s learned knowledge in later layers.
+- **Relevance**: Sycophancy can be viewed as a type of attractor - a default behavioral pattern. Architecture may influence susceptibility.
+
+### 7. Mode Collapse / Persona Collapse
+- **Sources**: arXiv 2510.01171 (Verbalized Sampling), HuggingFace blog (Persona Collapse Taxonomy)
+- **Key Findings**:
+  - Mode collapse in LLMs: RLHF alignment constrains models from generalizing over authorship
+  - Persona collapse: models fail to maintain distinct personas under recursive pressure
+  - Different LLM families show different collapse patterns
+- **Relevance**: Mode/persona collapse are manifestations of attractor dynamics. Architecture may determine which attractor patterns emerge.
+
+### 8. Interpreting RNN Behaviour via Excitable Network Attractors
+- **Authors**: Various
+- **Year**: 2018 | **Source**: arXiv 1807.10478
+- **Key Contribution**: Methods for extracting attractor dynamics from trained RNNs using invariant sets in phase space.
+- **Relevance**: Provides tools for analyzing RNN-specific attractor structures that can be compared with transformer attractors.
+
+## Common Methodologies
+
+- **Representation analysis**: Extract hidden states at each layer, measure convergence via cosine similarity or distance metrics (used in Concept Attractors, Attractor Cycles)
+- **Dynamical systems framing**: Model network as iterative function system, identify fixed points and limit cycles (used in Concept Attractors, Attractor Cycles, RNN Attractors)
+- **Few-shot generalization**: Compare architectures on ability to learn from limited examples (Fukushima &amp; Tani)
+- **Formal expressiveness analysis**: Prove representation power bounds using complexity theory (RNNs Are Not Transformers)
+
+## Standard Baselines
+
+- **Transformer**: GPT-2/nanoGPT for small-scale, Llama 3.1 8B for larger-scale
+- **RNN**: Vanilla RNN, GRU, LSTM for traditional; Mamba, RWKV for modern
+- **Hybrid**: RNN + single attention layer (shown to close representation gap)
+- **Metrics**: DTW for trajectory comparison, Levenshtein distance for text, cosine similarity for representations
+
+## Evaluation Metrics
+
+- **Attractor convergence**: Cosine similarity between representations at each layer
+- **2-periodicity degree**: Measures cyclic attractor patterns in iterative tasks
+- **Dynamic Time Warping (DTW)**: Measures trajectory similarity for dynamical systems
+- **Generalization in Learning (GIL)**: Performance vs. number of training examples
+
+## Gaps and Opportunities
+
+1. **No direct comparison of attractor formation in RNNs vs. Transformers for language tasks** - Fukushima &amp; Tani compare on 2D dynamics, not text. Concept Attractors and Attractor Cycles only study transformers.
+2. **No study of whether attractor cycles differ by architecture** - Do RNNs show 2-period cycles like transformers, or different period/structure?
+3. **No study of whether &#34;sufficiently capable&#34; RNNs converge to same attractors as LLMs** - The research hypothesis directly addresses this.
+4. **Limited understanding of how architectural inductive biases shape default responses** - Sycophancy and persona collapse studied per-model but not per-architecture-family.
+5. **No comparison of attractor layer locations across architectures** - In transformers, different concepts form attractors at different layers. What about RNNs?
+
+## Recommendations for Our Experiment
+
+### Recommended Datasets
+1. **TinyStories** (primary) - Simple enough to train small models from scratch, rich enough to form meaningful attractors
+2. **WikiText-2** (secondary) - Standard benchmark for language modeling comparison
+3. **Synthetic preference questions** - Direct probe of default/attractor responses
+4. **MAGE dataset** - For replicating attractor cycles experiments
+
+### Recommended Baselines
+1. **nanoGPT** (small transformer, ~1-10M params)
+2. **minGRU** (modern efficient RNN, comparable size)
+3. **Hybrid** (RNN + attention layer) as intermediate point
+
+### Recommended Metrics
+1. Cosine similarity of hidden representations (concept attractor analysis)
+2. 2-periodicity degree (attractor cycle analysis)
+3. Default response entropy (do architectures converge to narrower defaults?)
+4. DTW for trajectory comparison in representation space
+
+### Methodological Considerations
+- Match parameter counts between RNN and Transformer models for fair comparison
+- Train on identical data with identical hyperparameters where possible
+- Extract representations at multiple layers/timesteps for attractor analysis
+- Use both trained and untrained models to separate architectural priors from learned behavior
+- Test at multiple scales (1M, 5M, 10M params) to assess scaling effects on attractor formation
+
+
+════════════════════════════════════════════════════════════════════════════════
+                          PAPER REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+Generate a complete academic paper with the following structure:
+
+1. TITLE
+   - Clear, specific, informative
+   - Should convey main finding or contribution
+
+2. AUTHOR
+   - Use this exact author line in the \author{} block: Ari Holtzman and NeuriCo
+
+3. ABSTRACT (150-250 words)
+   - Problem statement
+   - Approach
+   - Key results
+   - Significance
+
+4. INTRODUCTION
+   - Research problem and motivation
+   - Gap in existing work
+   - Our contribution (be specific)
+   - Paper organization
+
+5. RELATED WORK
+   - Organized by theme/approach
+   - Position our work relative to prior work
+   - Cite papers from literature review
+
+6. METHODOLOGY
+   - Clear description of approach
+   - Experimental setup
+   - Datasets used
+   - Evaluation metrics
+   - Baselines
+
+7. RESULTS
+   - Present results with tables and figures
+   - Statistical analysis
+   - Comparison to baselines
+   - Ablation studies (if applicable)
+
+8. DISCUSSION
+   - Interpretation of results
+   - Limitations
+   - Broader implications
+
+9. CONCLUSION
+   - Summary of contributions
+   - Key findings
+   - Future work
+
+10. REFERENCES
+   - BibTeX format
+   - All cited papers
+
+════════════════════════════════════════════════════════════════════════════════
+                          OUTPUT FORMAT
+════════════════════════════════════════════════════════════════════════════════
+
+Create a MODULAR LaTeX project with the following directory structure:
+
+paper_draft/
+├── main.tex              # Main file that imports all sections
+├── references.bib        # BibTeX references
+├── sections/
+│   ├── abstract.tex      # Abstract content
+│   ├── introduction.tex  # Introduction section
+│   ├── related_work.tex  # Related work section
+│   ├── methodology.tex   # Methodology section
+│   ├── results.tex       # Results section
+│   ├── discussion.tex    # Discussion section
+│   └── conclusion.tex    # Conclusion section
+├── figures/              # Directory for any generated figures
+├── tables/               # Directory for complex standalone tables
+└── appendix/             # Directory for appendix sections (if needed)
+
+INSTRUCTIONS:
+1. First, create the directory structure above (mkdir -p paper_draft/sections paper_draft/figures paper_draft/tables paper_draft/appendix)
+2. Write main.tex using the EXACT preamble for NEURIPS:
+
+   \documentclass{article}
+   \usepackage[final]{neurips_2025}  % NEURIPS style (neurips_2025.sty is in paper_draft/)
+   \usepackage[hidelinks]{hyperref}  % REQUIRED: clickable links
+   \usepackage{booktabs}  % REQUIRED: professional tables
+   \usepackage{graphicx}
+   \usepackage{amsmath,amssymb}
+
+   % Import command files
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+   % Use this bibliography style:
+   \bibliographystyle{plainnat}
+
+   \author{Ari Holtzman and NeuriCo}
+
+   - Use \input{sections/...} to include each section
+   - Use \bibliography{references} for references
+3. Write each section file with COMPLETE content (no placeholders)
+4. Each section file should include its \section{} command
+5. Write references.bib with all citations in BibTeX format
+6. After writing all files, compile the paper:
+   cd paper_draft && pdflatex -interaction=nonstopmode main.tex && bibtex main && pdflatex -interaction=nonstopmode main.tex && pdflatex -interaction=nonstopmode main.tex
+
+This modular structure allows humans to easily:
+- Edit individual sections without navigating a large file
+- Track changes per section
+- Reuse sections across different paper versions
+
+════════════════════════════════════════════════════════════════════════════════
+                          QUALITY REQUIREMENTS
+════════════════════════════════════════════════════════════════════════════════
+
+- Academic tone throughout
+- All claims must be supported by data from the experiment report
+- Proper citations using \cite{} commands
+- Clear figures and tables with proper captions
+- NO placeholder text - every section must have real content
+- The paper MUST compile without errors
+- If compilation fails, debug and fix the LaTeX errors
+
+════════════════════════════════════════════════════════════════════════════════
+                          LAB WRITING STYLE
+════════════════════════════════════════════════════════════════════════════════
+
+Follow these lab-specific conventions to match our paper style:
+
+1. LANGUAGE STYLE:
+   - Use active voice: "We propose", "We examine", "We focus on"
+   - Be direct and confident: "Our main question is...", "We hypothesize that..."
+   - State things clearly and simply - prefer plain language over jargon
+   - Use bold questions as paragraph organizers: {\bf what is X?}
+   - Include specific quantitative claims: "8.97% over baseline"
+   - Avoid fancy wording: "utilize" → "use", "facilitate" → "help"
+
+2. INTRODUCTION STRUCTURE:
+   - Engaging hook (get to the point quickly)
+   - Problem importance
+   - Gap identification
+   - Your approach with method figure reference
+   - Quantitative preview of results
+   - Contribution bullets (3-4 items, action verbs)
+
+3. CONTRIBUTION LISTS:
+   \begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+       \item We propose...
+       \item We conduct...
+       \item We complement...
+   \end{itemize}
+
+4. MODULAR COMMANDS STRUCTURE:
+   Command templates are pre-copied to paper_draft/commands/:
+   - math.tex: Math notation macros
+   - general.tex: Formatting macros
+   - macros.tex: Project-specific term definitions (customize this for your paper)
+
+   In main.tex, include:
+   \input{commands/math}
+   \input{commands/general}
+   \input{commands/macros}
+
+5. REFERENCE CONVENTIONS:
+   Use reference macros from math.tex:
+   - \figref{fig:name} for "figure 1" (lowercase, in-sentence)
+   - \Figref{fig:name} for "Figure 1" (capitalized, start of sentence)
+   - \secref{sec:name} for "section 2"
+
+6. TEXT FORMATTING:
+   - Use \para{Header text} for bold paragraph headers
+   - Define method/dataset names with \textsc and \xspace:
+     \newcommand{\methodname}{\textsc{MethodName}\xspace}
+
+7. TABLE FORMATTING:
+   - Use booktabs package (no vertical lines)
+   - Use \resizebox{\textwidth}{!}{...} for wide tables
+   - Use @{} to remove padding at table edges
+   - Use \cmidrule(lr){x-y} for sub-headers
+   - Use \textsc{} for dataset/method names in headers
+   - Bold best results with {\bf ...}
+
+8. FIGURE FORMATTING:
+   - Use 0.32\textwidth for 3-column subfigures
+   - Use 0.95\linewidth for full-width figures
+   - Use \input{figures/legend} for shared legends
+   - Write self-contained captions explaining key observations
+
+9. RESULTS PRESENTATION:
+   - Define \increase and \decrease for colored arrows (green up, red down)
+   - Bold best results in tables
+   - Report confidence intervals when available
+
+10. ALGORITHM STYLING:
+    - Use algpseudocode with [noend]
+    - Use \triangleright for comments
+
+11. HYPERLINKS (REQUIRED):
+    - Always use \usepackage[hidelinks]{hyperref} or with colored links
+    - All citations, section refs, figure refs, table refs must be clickable
+    - This is essential for reader navigation
+
+════════════════════════════════════════════════════════════════════════════════
+                          WORKFLOW: REVIEW AND REFLECT
+════════════════════════════════════════════════════════════════════════════════
+
+Before calling finish, you MUST complete these review steps:
+
+1. REVIEW RESOURCES (at the start):
+   - Read .claude/skills/paper-writer/SKILL.md for detailed guidance
+   - Study templates/paper_writing/lab_style_guide.md for style conventions
+   - Browse paper_examples/ for formatting and language patterns
+
+2. SELF-REFLECTION (before finishing):
+   After writing all sections, review your work against these criteria:
+
+   LANGUAGE CHECK:
+   - [ ] Is the writing clear and jargon-free?
+   - [ ] Are claims specific with quantitative support?
+   - [ ] Is active voice used throughout?
+
+   FORMATTING CHECK:
+   - [ ] Does main.tex include \input{commands/math}, \input{commands/general}, \input{commands/macros}?
+   - [ ] Is hyperref package included for clickable references?
+   - [ ] Do tables use booktabs (no vertical lines)?
+   - [ ] Are best results bolded in tables?
+   - [ ] Are figures/tables properly captioned?
+
+   STRUCTURE CHECK:
+   - [ ] Does introduction follow: hook → importance → gap → approach → preview → contributions?
+   - [ ] Are contribution bullets specific with action verbs?
+   - [ ] Does the paper compile without errors?
+
+3. FIX ISSUES:
+   - Address any issues found in the self-reflection
+   - Re-compile and verify the PDF looks correct
+
+Only after completing this review should you consider the paper finished.

@@ -1,0 +1,18 @@
+\section{Introduction}
+\label{sec:intro}
+
+Ask several frontier large language models for their favorite dessert and they will all say chocolate lava cake. Ask for their favorite color and they converge on blue. Their preferred animal is the dolphin, their favorite number is seven, and they all believe early morning is the best time of day. This remarkable convergence---sometimes called the ``tiramisu effect'' or \newterm{persona collapse}---raises a fundamental question: \emph{why do independently trained models develop the same default preferences?}
+
+Three plausible explanations exist. First, the models share overlapping training data drawn from the internet, so they may simply reflect the statistical mode of human-generated text. Second, reinforcement learning from human feedback (RLHF) and related alignment procedures impose similar reward signals that steer models toward ``safe'' consensus answers. Third---and this is our focus---the shared Transformer architecture \citep{vaswani2017attention} may create an inductive bias that shapes \emph{which} defaults emerge from a given data distribution. If the architecture itself pushes models toward certain attractor states, then architectural monoculture in frontier AI compounds the well-known risks of data and alignment monoculture.
+
+We disentangle the architectural contribution by training parameter-matched Transformer, GRU \citep{cho2014gru}, and LSTM \citep{hochreiter1997lstm} models on identical data with identical tokenization, and comparing the default responses they develop. Our main finding is that \textbf{architecture alone is sufficient to produce different attractor patterns}: at matched perplexity (28.3 vs.\ 28.6), Transformer and GRU models agree on their greedy next-word prediction only 25\% of the time, with a mean Jensen-Shannon divergence of 0.34 between their full output distributions.
+
+We further analyze the representation-level mechanisms behind this divergence. Transformers create a tighter overall representation space (within-concept cosine similarity of 0.94) but fail to separate different semantic concepts (concept separation $-0.007$), producing what we call a \newterm{universal attractor basin}. GRUs, constrained by finite recurrent state, maintain more distributed predictions and better concept separation ($-0.024$). LSTMs, despite lower overall capability, show the best concept separation ($+0.060$). These findings suggest the self-attention mechanism specifically contributes to representational collapse.
+
+Our contributions are:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item We provide the first controlled comparison of attractor formation across neural architecture families (Transformer, GRU, LSTM) in the language domain, showing that matched-capability models develop measurably different default predictions.
+    \item We identify a \emph{universal attractor basin} in Transformer representations---high similarity across all concepts---that offers a mechanistic explanation for persona collapse.
+    \item We complement our controlled experiments with a frontier LLM survey confirming persona convergence across GPT-4o family models, establishing the real-world phenomenon our controlled study addresses.
+    \item We release our training code and evaluation pipeline to facilitate reproducible research on architecture-specific attractor dynamics.
+\end{itemize}

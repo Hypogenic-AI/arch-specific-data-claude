@@ -1,0 +1,29 @@
+{
+  "entropy_transformer_vs_gru": {
+    "test": "Mann-Whitney U",
+    "statistic": 214.5,
+    "p_value": 0.7048569458096697,
+    "effect_size": 0.005614383707103659,
+    "mean_1": 2.881922187751487,
+    "mean_2": 2.8779957422173386,
+    "significant": false
+  },
+  "entropy_transformer_vs_lstm": {
+    "test": "Mann-Whitney U",
+    "statistic": 239.5,
+    "p_value": 0.29140133723789996,
+    "effect_size": 0.38020946154595736,
+    "mean_1": 2.881922187751487,
+    "mean_2": 2.5524125782343,
+    "significant": false
+  },
+  "entropy_gru_vs_lstm": {
+    "test": "Mann-Whitney U",
+    "statistic": 240.0,
+    "p_value": 0.28525952186880876,
+    "effect_size": 0.4420910992942647,
+    "mean_1": 2.8779957422173386,
+    "mean_2": 2.5524125782343,
+    "significant": false
+  }
+}

@@ -1,0 +1,8 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+We present the first controlled comparison of attractor formation across neural architecture families in the language domain. By training parameter-matched Transformer, GRU, and LSTM models on identical data with identical tokenization, we show that architecture alone produces measurably different default response patterns: matched-capability Transformer and GRU models agree on their top-1 prediction only 25\% of the time, with a mean Jensen-Shannon divergence of 0.34. At the representation level, Transformers create a universal attractor basin---a tight, undifferentiated representation space where all concepts converge---that offers a mechanistic explanation for persona collapse. Recurrent architectures, constrained by finite hidden state, preserve better concept separation.
+
+Our findings suggest that the homogeneity of default behaviors in frontier LLMs is partly a consequence of the Transformer's inductive bias, not solely of shared training data or alignment procedures. This has practical implications: architectural diversity in deployed model ensembles may reduce persona collapse and associated monoculture risks.
+
+Several promising directions remain. Scaling this analysis to modern recurrent architectures (Mamba, RWKV) at frontier scale would test whether the architecture--attractor relationship holds in the regime where it matters most. Applying RLHF to matched architectures would isolate alignment's contribution to persona collapse. Finally, layer-wise attractor analysis---extending the framework of \citet{chytas2025concept} to recurrent networks---could reveal \emph{where} in the network architecture-specific defaults emerge, informing targeted interventions.

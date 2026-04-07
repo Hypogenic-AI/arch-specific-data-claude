@@ -1,0 +1,63 @@
+\section{Methodology}
+\label{sec:method}
+
+We design a multi-pronged empirical study to isolate the effect of architecture on attractor formation. Our approach combines a frontier LLM survey to establish the persona collapse phenomenon (\secref{sec:method_survey}), controlled training of matched architectures (\secref{sec:method_training}), and three complementary probing experiments (\secref{sec:method_probing}).
+
+\subsection{Frontier LLM Survey}
+\label{sec:method_survey}
+
+To confirm that persona collapse is a real phenomenon in deployed systems, we query three frontier models (GPT-4o, GPT-4o-mini, GPT-4.1-mini) with 10 preference questions (\eg ``What is your favorite dessert?'', ``What is your preferred color?''). We sample each question 5 times per model at temperature 0.7 and measure the fraction of models that converge on the same top answer.
+
+\subsection{Matched Architecture Training}
+\label{sec:method_training}
+
+\para{Architectures.} We train three architecture families at two scales:
+
+\begin{table}[h]
+\centering
+\caption{Model configurations. All models share the same tokenizer and training data. The small-scale Transformer and GRU achieve comparable perplexity, enabling controlled comparison.}
+\label{tab:models}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+\textbf{Model} & \textbf{Architecture} & \textbf{Scale} & \textbf{Parameters} & \textbf{Best Val Loss} & \textbf{Perplexity} \\
+\midrule
+\transformer & 4 layers, 4 heads, $d{=}256$ & Small & 4.27M & 3.342 & \textbf{28.3} \\
+\gru & 4 layers, $d{=}256$ & Small & 3.68M & 3.353 & 28.6 \\
+\lstm & 4 layers, $d{=}256$ & Small & 4.20M & 3.874 & 48.1 \\
+\midrule
+\transformer (med.) & 6 layers, 6 heads, $d{=}384$ & Medium & 10.35M & 3.454 & 31.6 \\
+\gru (med.) & 6 layers, $d{=}384$ & Medium & 8.47M & 3.721 & 41.3 \\
+\lstm (med.) & 6 layers, $d{=}384$ & Medium & 10.24M & 4.519 & 91.8 \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\para{Training data.} All models are trained on 15,000 stories from the \tinystories dataset \citep{eldan2023tinystories}, totaling 2.6M tokens of children's narratives. We use a shared word-level tokenizer with a vocabulary of 8,192 tokens. Sequences are chunked into non-overlapping segments of 128 tokens.
+
+\para{Training protocol.} All models are trained with the same optimizer (Adam), learning rate schedule, and random seed (42). We enable deterministic CuDNN operations for reproducibility. Training uses PyTorch 2.5.1 with CUDA 12.4 on NVIDIA RTX A6000 GPUs.
+
+\subsection{Probing Experiments}
+\label{sec:method_probing}
+
+We conduct three probing experiments to characterize attractor differences at multiple levels of analysis.
+
+\para{Experiment 1: Response diversity.} We generate 20 completions per prompt per model using temperature 0.8 sampling across a battery of prompts. We measure the Shannon entropy (in bits) of the generated content word distribution as a proxy for response diversity.
+
+\para{Experiment 2: Representation structure.} We extract hidden states for 25 prompts spanning 5 semantic categories (food, animals, colors, emotions, actions). For each architecture, we compute: (a) \emph{within-concept similarity}---the mean cosine similarity between hidden states for prompts in the same category; (b) \emph{between-concept similarity}---the mean cosine similarity across categories; and (c) \emph{concept separation}---the difference between within- and between-concept similarity, measuring how well the architecture distinguishes semantic categories. We also compute \emph{attractor basin size} as the mean Euclidean distance from each hidden state to the centroid of its category.
+
+\para{Experiment 3: Next-word attractor analysis.} We compare the top-1 next-word prediction (greedy decoding) across architectures for 12 prompts designed to elicit default responses (\eg ``she was very \_\_\_'', ``they decided to \_\_\_''). For each prompt, we compute the full next-word probability distribution and measure the Jensen-Shannon divergence ($\jsd$) between all architecture pairs. The $\jsd$ is a symmetric, bounded divergence: $\jsd = 0$ indicates identical distributions and $\jsd = 1$ indicates maximally different distributions.
+
+\subsection{Evaluation Metrics}
+
+We use the following metrics throughout our experiments:
+\begin{itemize}[leftmargin=*,itemsep=0pt,topsep=0pt]
+    \item \textbf{Response entropy}: Shannon entropy of generated content words (higher = more diverse).
+    \item \textbf{Jensen-Shannon divergence}: Symmetric divergence between next-word distributions.
+    \item \textbf{Top-1 agreement rate}: Fraction of prompts where architectures predict the same top word.
+    \item \textbf{Concept separation}: Within-concept minus between-concept cosine similarity.
+    \item \textbf{Attractor basin size}: Mean Euclidean distance from hidden states to category centroids.
+\end{itemize}
+
+Statistical comparisons use Mann-Whitney U tests for continuous metrics, with Cohen's $d$ for effect sizes. We report all $p$-values without correction due to the exploratory nature of the study.

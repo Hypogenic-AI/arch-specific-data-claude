@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "stages": {
+    "resource_finder": {
+      "success": true,
+      "completion_marker": "/workspaces/arch-specific-data-claude/.resource_finder_complete",
+      "outputs": {
+        "literature_review": "/workspaces/arch-specific-data-claude/literature_review.md",
+        "resources_catalog": "/workspaces/arch-specific-data-claude/resources.md",
+        "papers_dir": "/workspaces/arch-specific-data-claude/papers",
+        "datasets_dir": "/workspaces/arch-specific-data-claude/datasets",
+        "code_dir": "/workspaces/arch-specific-data-claude/code"
+      },
+      "log_file": "/workspaces/arch-specific-data-claude/logs/resource_finder_claude.log",
+      "transcript_file": "/workspaces/arch-specific-data-claude/logs/resource_finder_claude_transcript.jsonl",
+      "elapsed_time": 1265.226542711258
+    },
+    "experiment_runner": {
+      "success": true,
+      "return_code": 0,
+      "elapsed_time": 3992.4589211940765,
+      "log_file": "/workspaces/arch-specific-data-claude/logs/execution_claude.log",
+      "transcript_file": "/workspaces/arch-specific-data-claude/logs/execution_claude_transcript.jsonl"
+    }
+  },
+  "work_dir": "/workspaces/arch-specific-data-claude"
+}

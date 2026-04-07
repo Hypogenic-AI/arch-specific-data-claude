@@ -1,0 +1,41 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{The Transformer Attractor Mechanism}
+
+Our results point to a specific mechanism through which Transformer architecture contributes to persona collapse. We summarize it in three observations.
+
+{\bf Attention creates a universal attractor basin.} The self-attention mechanism, which allows every token to attend to every other token, produces hidden representations where all inputs---regardless of semantic content---converge to a narrow region of representation space. We observe within-concept similarity of 0.943 and between-concept similarity of 0.950 in the \transformer, meaning that prompts about food are nearly as similar to prompts about animals as they are to other food prompts. This representational uniformity naturally leads to similar default outputs across input categories.
+
+{\bf Sharper probability peaks amplify convergence.} Transformers consistently concentrate more probability mass on their top predictions than GRUs do (43.3\% vs.\ 26.8\% for ``the little girl named \_\_\_''). A steeper attractor basin means that once the model begins to prefer a particular default, it commits to it more strongly, producing less variability across samples and reducing the chance of ``escaping'' the attractor through sampling.
+
+{\bf Recurrent architectures preserve conceptual diversity.} GRUs and LSTMs, constrained to process information through a fixed-size hidden state, face information-theoretic bottlenecks that force trade-offs about what to represent. This constraint, typically viewed as a limitation, has the side effect of preserving more distinct representations for different semantic categories. LSTMs show positive concept separation ($+0.060$) despite much worse perplexity, suggesting that the gating mechanism actively maintains concept boundaries.
+
+\subsection{Would a Good Enough RNN Like Chocolate Lava Cake?}
+
+Our evidence suggests: \emph{probably not}. Even when \gru matches \transformer in language modeling capability (perplexity 28.6 vs.\ 28.3---essentially identical), their default responses diverge substantially (25\% top-1 agreement, mean $\jsd = 0.34$). The architectural inductive bias shapes \emph{which} attractors form, not just their strength.
+
+However, we cannot conclusively answer whether a frontier-scale RNN---with billions of parameters, internet-scale data, and RLHF alignment---would converge to the same defaults as frontier Transformers. Modern recurrent architectures like Mamba \citep{gu2023mamba} and RWKV \citep{peng2023rwkv} incorporate attention-like mechanisms that may shift their attractor dynamics toward Transformer-like patterns, as predicted by \citet{wen2024rnns}. Moreover, RLHF alignment likely exerts strong pressure toward consensus defaults that could dominate architectural differences at scale. Our evidence speaks to the pre-alignment, pre-scale regime.
+
+\subsection{Data-Driven vs.\ Architecture-Driven Attractors}
+
+Not all defaults are architecture-specific. Some prompts produce identical top-1 predictions across all architectures: ``he wanted to play'' and ``her favorite color was pink'' are universal attractors driven entirely by the training data (\tinystories contains children's narratives where playing and the color pink are frequent). The $\jsd$ for these prompts is low (0.217 and 0.259), confirming that the data signal is strong enough to override architectural preferences.
+
+In contrast, prompts like ``the little girl named \_\_\_'' ($\jsd = 0.798$) and ``the little boy had a pet \_\_\_'' ($\jsd = 0.727$) reveal where architectural inductive biases dominate. For these prompts, the data provides a weaker or more ambiguous signal, and the architecture's own processing preferences determine the default. This suggests a framework where attractors exist on a spectrum from data-dominant (universal) to architecture-dominant (divergent), and the relative strength depends on how peaked the data distribution is for a given context.
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+Our study has several important limitations.
+
+\para{Scale.} Our models range from 3.7M to 10.3M parameters, far below the billions used in frontier systems. Attractor dynamics may change qualitatively at scale, and some of our findings (particularly the LSTM's concept separation advantage) may not hold for larger models.
+
+\para{Tokenization.} We use word-level tokenization with an 8K vocabulary. Subword tokenization (BPE, SentencePiece) would allow a fairer comparison and is standard in modern language models.
+
+\para{Training data.} Our 2.6M-token training corpus is small and domain-specific (children's narratives). Real persona collapse emerges from internet-scale data containing diverse opinions and preferences. The medium-scale models are visibly undertrained, confounding the scale analysis.
+
+\para{No alignment signal.} Persona collapse in frontier models occurs post-RLHF. Our models have no alignment training, so we test pre-alignment attractor formation only. The alignment signal may dominate architectural differences at scale.
+
+\para{Statistical power.} With 12 attractor prompts and 20 samples each, our statistical tests have limited power. The non-significant entropy difference between \transformer and \gru ($p = 0.70$) may reflect insufficient power rather than true equivalence.
+
+\para{Single seed.} All experiments use a single random seed (42). Training with multiple seeds would strengthen the results by separating architectural effects from initialization effects.

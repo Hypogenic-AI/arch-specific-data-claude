@@ -1,0 +1,219 @@
+{
+  "per_model_metrics": {
+    "transformer": {
+      "within_concept_similarity": {
+        "food": 0.9113419651985168,
+        "animals": 0.8919695019721985,
+        "colors": 0.9491504430770874,
+        "emotions": 0.9474200010299683,
+        "actions": 0.9143282771110535
+      },
+      "mean_within_similarity": 0.9228420376777648,
+      "between_concept_similarity": {
+        "food-animals": 0.9064667224884033,
+        "food-colors": 0.9681335687637329,
+        "food-emotions": 0.9558115601539612,
+        "food-actions": 0.9270301461219788,
+        "animals-colors": 0.9296895265579224,
+        "animals-emotions": 0.9253444075584412,
+        "animals-actions": 0.9380916953086853,
+        "colors-emotions": 0.9651272892951965,
+        "colors-actions": 0.8991993069648743,
+        "emotions-actions": 0.9186186790466309
+      },
+      "mean_between_similarity": 0.9333512902259826,
+      "concept_separation": -0.010509252548217773,
+      "within_concept_variance": {
+        "food": 5.4330949783325195,
+        "animals": 5.958604335784912,
+        "colors": 4.044182300567627,
+        "emotions": 4.158129692077637,
+        "actions": 5.362863063812256
+      },
+      "mean_within_variance": 4.991374874114991
+    },
+    "gru": {
+      "within_concept_similarity": {
+        "food": 0.8021518588066101,
+        "animals": 0.8742124438285828,
+        "colors": 0.8820101022720337,
+        "emotions": 0.9225307703018188,
+        "actions": 0.8082891702651978
+      },
+      "mean_within_similarity": 0.8578388690948486,
+      "between_concept_similarity": {
+        "food-animals": 0.8892192244529724,
+        "food-colors": 0.9509069919586182,
+        "food-emotions": 0.8835299611091614,
+        "food-actions": 0.9018347263336182,
+        "animals-colors": 0.8878359794616699,
+        "animals-emotions": 0.8657267093658447,
+        "animals-actions": 0.8975947499275208,
+        "colors-emotions": 0.865045964717865,
+        "colors-actions": 0.8743970394134521,
+        "emotions-actions": 0.869084894657135
+      },
+      "mean_between_similarity": 0.8885176241397857,
+      "concept_separation": -0.03067875504493711,
+      "within_concept_variance": {
+        "food": 8.305150032043457,
+        "animals": 6.435187339782715,
+        "colors": 6.405783653259277,
+        "emotions": 5.2185869216918945,
+        "actions": 8.233033180236816
+      },
+      "mean_within_variance": 6.919548225402832
+    },
+    "lstm": {
+      "within_concept_similarity": {
+        "food": 0.8091486692428589,
+        "animals": 0.747225821018219,
+        "colors": 0.8663339614868164,
+        "emotions": 0.8640800714492798,
+        "actions": 0.8511629104614258
+      },
+      "mean_within_similarity": 0.82759028673172,
+      "between_concept_similarity": {
+        "food-animals": 0.7842372059822083,
+        "food-colors": 0.8993979096412659,
+        "food-emotions": 0.8733944892883301,
+        "food-actions": 0.7246260046958923,
+        "animals-colors": 0.759281575679779,
+        "animals-emotions": 0.8674010634422302,
+        "animals-actions": 0.7712903618812561,
+        "colors-emotions": 0.8140231370925903,
+        "colors-actions": 0.5148288011550903,
+        "emotions-actions": 0.7704354524612427
+      },
+      "mean_between_similarity": 0.7778916001319885,
+      "concept_separation": 0.04969868659973142,
+      "within_concept_variance": {
+        "food": 7.892801761627197,
+        "animals": 9.429078102111816,
+        "colors": 6.831957817077637,
+        "emotions": 6.698602199554443,
+        "actions": 6.9988908767700195
+      },
+      "mean_within_variance": 7.570266151428223
+    },
+    "transformer_medium": {
+      "within_concept_similarity": {
+        "food": 0.95941162109375,
+        "animals": 0.9442490339279175,
+        "colors": 0.9744324684143066,
+        "emotions": 0.9693544507026672,
+        "actions": 0.9698463678359985
+      },
+      "mean_within_similarity": 0.9634587883949279,
+      "between_concept_similarity": {
+        "food-animals": 0.9774464964866638,
+        "food-colors": 0.9765664339065552,
+        "food-emotions": 0.9809112548828125,
+        "food-actions": 0.9664803743362427,
+        "animals-colors": 0.9740181565284729,
+        "animals-emotions": 0.9686973094940186,
+        "animals-actions": 0.9712617993354797,
+        "colors-emotions": 0.9599356055259705,
+        "colors-actions": 0.9311663508415222,
+        "emotions-actions": 0.9631797075271606
+      },
+      "mean_between_similarity": 0.9669663488864899,
+      "concept_separation": -0.0035075604915619785,
+      "within_concept_variance": {
+        "food": 4.035033226013184,
+        "animals": 4.588656902313232,
+        "colors": 3.1400692462921143,
+        "emotions": 3.4549319744110107,
+        "actions": 3.477191209793091
+      },
+      "mean_within_variance": 3.7391765117645264
+    },
+    "gru_medium": {
+      "within_concept_similarity": {
+        "food": 0.7585314512252808,
+        "animals": 0.835809588432312,
+        "colors": 0.8460060954093933,
+        "emotions": 0.9195843935012817,
+        "actions": 0.7453274726867676
+      },
+      "mean_within_similarity": 0.8210518002510071,
+      "between_concept_similarity": {
+        "food-animals": 0.8460589051246643,
+        "food-colors": 0.9563341736793518,
+        "food-emotions": 0.8213478922843933,
+        "food-actions": 0.8414857387542725,
+        "animals-colors": 0.8295015096664429,
+        "animals-emotions": 0.849860668182373,
+        "animals-actions": 0.8429871201515198,
+        "colors-emotions": 0.8156821131706238,
+        "colors-actions": 0.7800039052963257,
+        "emotions-actions": 0.800539493560791
+      },
+      "mean_between_similarity": 0.8383801519870758,
+      "concept_separation": -0.017328351736068726,
+      "within_concept_variance": {
+        "food": 9.834635734558105,
+        "animals": 7.978787899017334,
+        "colors": 7.813668727874756,
+        "emotions": 5.745625972747803,
+        "actions": 10.280237197875977
+      },
+      "mean_within_variance": 8.330591106414795
+    },
+    "lstm_medium": {
+      "within_concept_similarity": {
+        "food": 0.8015421628952026,
+        "animals": 0.832451343536377,
+        "colors": 0.9378140568733215,
+        "emotions": 0.913558304309845,
+        "actions": 0.9136430621147156
+      },
+      "mean_within_similarity": 0.8798017859458923,
+      "between_concept_similarity": {
+        "food-animals": 0.861097514629364,
+        "food-colors": 0.9419985413551331,
+        "food-emotions": 0.9163955450057983,
+        "food-actions": 0.7155560255050659,
+        "animals-colors": 0.7760205864906311,
+        "animals-emotions": 0.9267404079437256,
+        "animals-actions": 0.823442280292511,
+        "colors-emotions": 0.8117654323577881,
+        "colors-actions": 0.5287763476371765,
+        "emotions-actions": 0.791029155254364
+      },
+      "mean_between_similarity": 0.8092821836471558,
+      "concept_separation": 0.07051960229873655,
+      "within_concept_variance": {
+        "food": 8.433926582336426,
+        "animals": 7.678311347961426,
+        "colors": 4.826101779937744,
+        "emotions": 5.3997039794921875,
+        "actions": 5.541797161102295
+      },
+      "mean_within_variance": 6.375968170166016
+    }
+  },
+  "architecture_comparison": {
+    "transformer": {
+      "mean_within_similarity": 0.9431504130363464,
+      "mean_between_similarity": 0.9501588195562363,
+      "mean_separation": -0.007008406519889876,
+      "mean_variance": 4.3652756929397585,
+      "num_models": 2
+    },
+    "gru": {
+      "mean_within_similarity": 0.8394453346729278,
+      "mean_between_similarity": 0.8634488880634308,
+      "mean_separation": -0.02400355339050292,
+      "mean_variance": 7.625069665908814,
+      "num_models": 2
+    },
+    "lstm": {
+      "mean_within_similarity": 0.8536960363388062,
+      "mean_between_similarity": 0.7935868918895721,
+      "mean_separation": 0.06010914444923399,
+      "mean_variance": 6.97311716079712,
+      "num_models": 2
+    }
+  }
+}
